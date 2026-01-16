@@ -1,5 +1,17 @@
 import streamlit as st
-from openai import OpenAI
+from openai import OpenAI, AuthenticationError
+
+# Validate Open AI key function for lab, used below
+def validate_api_key(api_key):
+    try:
+        client = OpenAI(api_key=api_key)
+        client.models.list()
+        #random openAI function to check validity
+        return True, "API key is valid"
+    except AuthenticationError:
+        return False, "Invalid API key"
+    except Exception as e:
+        return False, f"Error validating API key: {str(e)}"
 
 # Show title and description.
 st.title("Nick's document question answering")
@@ -12,9 +24,21 @@ st.write(
 # Alternatively, you can store the API key in `./.streamlit/secrets.toml` and access it
 # via `st.secrets`, see https://docs.streamlit.io/develop/concepts/connections/secrets-management
 openai_api_key = st.text_input("OpenAI API Key", type="password")
-if not openai_api_key:
-    st.info("Please add your OpenAI API key to continue.", icon="🗝️")
+
+# Validate API key when entered
+if openai_api_key:
+    is_valid, message = validate_api_key(openai_api_key)
+    if is_valid:
+        st.success(message, icon="✅")
+    else:
+        st.error(message)
+        st.stop()
 else:
+    st.info("Please add your OpenAI API key to continue.", icon="🗝️")
+    st.stop()
+
+# if valid, continue
+if openai_api_key:
 
     # Create an OpenAI client.
     client = OpenAI(api_key=openai_api_key)
