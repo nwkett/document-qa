@@ -1,4 +1,5 @@
 import streamlit as st
+import fitz  # PyMuPDF
 from openai import OpenAI, AuthenticationError
 
 # Validate Open AI key function for lab, used below
@@ -12,6 +13,14 @@ def validate_api_key(api_key):
         return False, "Invalid API key"
     except Exception as e:
         return False, f"Error validating API key: {str(e)}"
+    
+def extract_text_from_pdf(pdf_path):
+    document = fitz.open(pdf_path)
+    text = ''
+    for page_num in range(len(document)):
+        page = document.load_page(page_num)
+        text += page.get_text()
+    return text
 
 # Show title and description.
 st.title("Nick's document question answering")
@@ -43,10 +52,13 @@ if openai_api_key:
     # Create an OpenAI client.
     client = OpenAI(api_key=openai_api_key)
 
+
+
     # Let the user upload a file via `st.file_uploader`.
     uploaded_file = st.file_uploader(
         "Upload a document (.txt or .md)", type=("txt", "md")
     )
+
 
     # Ask the user for a question via `st.text_area`.
     question = st.text_area(
@@ -58,7 +70,15 @@ if openai_api_key:
     if uploaded_file and question:
 
         # Process the uploaded file and question.
-        document = uploaded_file.read().decode()
+        file_extension = uploaded_file.name.split('.')[-1]
+        if file_extension == 'txt':
+            document = uploaded_file.read().decode()
+        elif file_extension == 'pdf':
+            document = extract_text_from_pdf(uploaded_file)
+        else:
+            st.error("Unsupported file type.")
+            st.stop()
+
         messages = [
             {
                 "role": "user",
