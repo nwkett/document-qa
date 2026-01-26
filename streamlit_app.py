@@ -1,5 +1,5 @@
 import streamlit as st
-import fitz  # PyMuPDF
+import fitz
 from openai import OpenAI, AuthenticationError
 
 # Validate Open AI key function for lab, used below
