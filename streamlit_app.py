@@ -1,6 +1,7 @@
 import streamlit as st
 import fitz
 from openai import OpenAI, AuthenticationError
+from io import BytesIO
 
 # Validate Open AI key function for lab, used below
 def validate_api_key(api_key):
@@ -14,8 +15,8 @@ def validate_api_key(api_key):
     except Exception as e:
         return False, f"Error validating API key: {str(e)}"
     
-def extract_text_from_pdf(pdf_path):
-    document = fitz.open(pdf_path)
+def extract_text_from_pdf(pdf_file):
+    document = fitz.open(stream=pdf_file.read(), filetype="pdf")
     text = ''
     for page_num in range(len(document)):
         page = document.load_page(page_num)
@@ -74,7 +75,7 @@ if openai_api_key:
         if file_extension == 'txt':
             document = uploaded_file.read().decode()
         elif file_extension == 'pdf':
-            document = extract_text_from_pdf(uploaded_file).read().decode()
+            document = extract_text_from_pdf(uploaded_file)
         else:
             st.error("Unsupported file type.")
             st.stop()
