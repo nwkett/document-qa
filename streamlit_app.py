@@ -74,7 +74,7 @@ if openai_api_key:
         if file_extension == 'txt':
             document = uploaded_file.read().decode()
         elif file_extension == 'pdf':
-            document = extract_text_from_pdf(uploaded_file)
+            document = extract_text_from_pdf(uploaded_file).read().decode()
         else:
             st.error("Unsupported file type.")
             st.stop()
